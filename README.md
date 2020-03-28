@@ -1,2 +1,2 @@
-# conversation-consternation
- A simple node-based dialogue editor based on Dialogger by ETodd and electron.
+# Conversation Consternation
+ Interactive node based dialogue editor based on Dialogger by etodd
