@@ -11,7 +11,7 @@ function CreateWindow() {
         webPreferences: {
             nodeIntegration: true
         },
-        //icon: path.join(__dirname, 'g/icon/icon64.png')
+        icon: path.join(__dirname, 'g/icon64.png')
     })
 
     window.loadFile('index.html');
