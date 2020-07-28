@@ -159,17 +159,19 @@ Node styles
 
 .node input[type="actor"]
 {
-	pointer-events: auto;
+	float: right;
+	border: none;
+	font-weight: bold;
+	width: 50%;
+	height: 16px;
+	line-height: 0px;
+	text-align: middle;
+	margin: 0 auto;
+	margin-right: 10px;
+	padding: 0;
 	border: none;
 	box-sizing: border-box;
 	background-color: #456;
-	color: #fff;
-	width: 50%;
-	padding: 4px;
-	float: right;
-	line-height: 0px;
-	text-align: middle;
-	margin: 2px;
 	border-radius: 5px;
 }
 
@@ -179,10 +181,14 @@ Node styles
 	border: none;
 	box-sizing: border-box;
 	background-color: #456;
+	margin-top: -8px;
 	color: #fff;
 	float: right;
 	border-radius: 5px;
 	resize: none;
+	position: relative;
+	/*margin: 0 auto;*/
+	width: 100%;
 }
 
 .node .label

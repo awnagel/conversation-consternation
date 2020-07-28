@@ -4,15 +4,14 @@ var path = require('path')
 let window;
 let main;
 
-app.whenReady().then(() => {
-
+function CreateWindow() {
     window = new BrowserWindow({
         width: 1280,
         height: 768,
         webPreferences: {
             nodeIntegration: true
         },
-        icon: path.join(__dirname, 'g/icon/icon64.png')
+        //icon: path.join(__dirname, 'g/icon/icon64.png')
     })
 
     window.loadFile('index.html');
@@ -27,7 +26,9 @@ app.whenReady().then(() => {
     function Command_Option_J(e) { return e.keyCode === 74 && e.metaKey && e.altKey }
 
     window.dispatchEvent(new window.Event('app-ready'));
-});
+}
+
+app.whenReady().then(CreateWindow);
 
 app.on('create', function()
 {

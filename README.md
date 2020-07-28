@@ -1,5 +1,5 @@
 # Conversation Consternation
- Interactive node based dialogue editor based on Dialogger by etodd
+Interactive node based dialogue editor based on Dialogger by etodd
 
 Requires electron, built with electron-packager.
 
