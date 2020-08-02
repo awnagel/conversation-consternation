@@ -4,6 +4,8 @@ const { Menu, MenuItem, dialog } = remote
 
 // Constants
 
+//TODO: Tags Permanent.
+
 var con =
 {
 	allowable_connections:
@@ -84,10 +86,7 @@ joint.shapes.dialogue.BaseView = joint.shapes.devs.ModelView.extend(
 		'<div class="node">',
 		'<span class="label"></span>',
 		'<button class="delete">x</button>',
-		'<input type="actor" class="actor" placeholder="Actor" />',
-		'<input type="tags" class="tags" placeholder="Tags" />',
 		'<p><textarea class="name" rows="4" cols="27" placeholder="Speech"></textarea></p>',
-		//'<input type="text" class="name" placeholder="Text" />',
 		'</div>',
 	].join(''),
 
@@ -106,16 +105,6 @@ joint.shapes.dialogue.BaseView = joint.shapes.devs.ModelView.extend(
 		this.$box.find('input.name').on('change', _.bind(function(evt)
 		{
 			this.model.set('name', $(evt.target).val());
-		}, this));
-
-		this.$box.find('input.actor').on('change', _.bind(function(evt)
-		{
-			this.model.set('actor', $(evt.target).val())
-		}, this));
-
-		this.$box.find('input.actor').on('change', _.bind(function(evt)
-		{
-			this.model.set('tags', ['a', 'b', 'c'])
 		}, this));
 
 		this.$box.find('textarea.name').on('change', _.bind(function(evt)
@@ -149,16 +138,11 @@ joint.shapes.dialogue.BaseView = joint.shapes.devs.ModelView.extend(
 		if (!nameField.is(':focus'))
 			nameField.val(this.model.get('name'));
 
-		var actorField = this.$box.find('input.actor');
-		if (!actorField.is(':focus')) {
-			actorField.val(this.model.get('actor'))
-		}
-
 		var textAreaField = this.$box.find('textarea.name');
 		if (!textAreaField.is(':focus')) {
 			textAreaField.val(this.model.get('name'))
 		}
-			
+
 		var label = this.$box.find('.label');
 		var type = this.model.get('type').slice('dialogue.'.length);
 		label.text(type);
@@ -215,6 +199,7 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 		[
 			'<div class="node">',
 			'<span class="label"></span>',
+			'<input type="actor" class="actor" placeholder="Actor" />',
 			'<p><textarea class="name" rows="4" cols="27" placeholder="Speech"></textarea></p>',
 			'<button class="add">+</button>',
 			'<button class="remove">-</button>',
@@ -244,15 +229,14 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 		updateBox: function() {
 			joint.shapes.dialogue.BaseView.prototype.updateBox.apply(this, arguments);
 			var tags = this.model.get('tags');
-			var tagFields = this.$box.find('input.value');
+			var tagFields = this.$box.find('input.tag');
 
 			for (var i = tagFields.length; i < tags.length; i++) {
-				var $field = $('<input type="text" class="value"/>');
+				var $field = $('<input type="text" class="tag"/>');
 				$field.attr('placeholder', '#tag');
 				this.$box.append($field);
 				$field.on('mousedown click', function(evt) { evt.stopPropagation(); });
 
-				// This is an example of reacting on the input change and storing the input data in the cell model.
 				$field.on('change', _.bind(function(evt)
 				{
 					var tags = this.model.get('tags').slice(0);
@@ -264,12 +248,13 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 			for (var i = tags.length; i < tagFields.length; i++)
 				$(tagFields[i]).remove();
 
-			tagFields = this.$box.find('input.value');
+			tagFields = this.$box.find('input.tag');
 			for (var i = 0; i < tagFields.length; i++)
 			{
 				var field = $(tagFields[i]);
+				console.log(field);
 				if (!field.is(':focus'))
-					field.val(tagFields[i].value);
+					field.val(tags[i]);
 			}
 		},
 
@@ -560,7 +545,16 @@ func.optimized_data = function()
 				node.name = cell.name;
 				node.next = null;
 				node.actor = cell.actor;
-				node.tags = cell.tags
+				node.tags = [];
+				for (var j = 0; j < cell.tags.length; j++) {
+					var s = cell.tags[j];
+
+					if (s[0] != '#') {
+						var s = '#' + s;
+					}
+
+					node.tags[j] = s;
+				}
 			}
 			else
 			{
