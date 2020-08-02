@@ -190,14 +190,6 @@ Node styles
 	border-radius: 5px;
 }
 
-.node input[type="tags"]
-{
-	float: right;
-	height: 16px;
-	margin-top: 55px;
-	position: relative;
-}
-
 .node textarea {
 	/* Enable interacting with inputs only. */
 	pointer-events: auto;	
@@ -205,6 +197,7 @@ Node styles
 	box-sizing: border-box;
 	background-color: #456;
 	margin-top: -8px;
+	margin-bottom: 8px;
 	color: #fff;
 	float: right;
 	border-radius: 5px;

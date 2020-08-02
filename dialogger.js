@@ -212,9 +212,9 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 			'<span class="label"></span>',
 			'<button class="delete">x</button>',
 			'<input type="actor" class="actor" placeholder="Actor" />',
-			'<p><textarea class="name" rows="4" cols="27" placeholder="Speech"></textarea></p>',
 			'<button class="add">+</button>',
 			'<button class="remove">-</button>',
+			'<p><textarea class="name" rows="4" cols="27" placeholder="Speech"></textarea></p>',
 			'</div>',
 		].join(''),
 
@@ -269,11 +269,12 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 			}
 		},
 
-		//TODO: Make this work based on the size of the fields. (As defined in CSS)
 		updateSize: function()
 		{
 			var fields = this.model.get('tags');
-			this.model.set('size', { width: this.model.get('size').width, height: 110 + Math.max(0, (fields.length) * 33) });
+			var tagField = this.$box.find('input.tag');
+			var height = tagField.outerHeight(true);
+			this.model.set('size', { width: this.model.get('size').width, height: 110 + Math.max(0, (fields.length) * height) });
 		},
 	});
 
