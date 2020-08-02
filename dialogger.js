@@ -201,6 +201,7 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 		[
 			'<div class="node">',
 			'<span class="label"></span>',
+			'<button class="delete">x</button>',
 			'<input type="actor" class="actor" placeholder="Actor" />',
 			'<p><textarea class="name" rows="4" cols="27" placeholder="Speech"></textarea></p>',
 			'<button class="add">+</button>',
@@ -724,6 +725,8 @@ func.exit = function()
 
 function queryNodes() {
 	var $searchbar = $("#search-bar");
+
+	console.log($searchbar.val());
 	
 	var searchTerms = $searchbar.val();
 	var cells = state.graph.toJSON().cells
@@ -733,14 +736,14 @@ function queryNodes() {
 	if (cells.length === 0)
 		return;
 
-	clearQuery();
+	clearQuery(false);
 
 	for (var i = 0; i < cells.length; i++) {
 		var cell = cells[i];
 
 		if (cell.type != 'link')
 		{
-			var type =  cell.type.slice('dialogue.'.length);
+			var type = cell.type.slice('dialogue.'.length);
 			if (type === 'Text' || type == 'Choice') {
 				// Check for tags and keywords
 				var tags = cell.tags;
@@ -759,9 +762,8 @@ function queryNodes() {
 						speech = speech.split(" ");
 
 						for (var k = 0; k < speech.length; k++) {
-							if (speech[k] == term) {
+							if (speech[k] == term)
 								GetNodeById(cell.id).attr('class', 'node highlight');
-							}
 						}
 					}
 				}
@@ -770,9 +772,11 @@ function queryNodes() {
 	}
 }
 
-function clearQuery() {
-	var $searchbar = $("#search-bar");
-	$searchbar.val("");
+function clearQuery(clearSearchText = true) {
+	if (clearSearchText) {
+		var $searchbar = $("#search-bar");
+		$searchbar.val("");
+	}
 
 	var cells = state.graph.toJSON().cells
 
@@ -849,7 +853,7 @@ function GetNodeById(ID) {
 		$this.unwrap();
 	});
 
-	$('#search-bar').on('change', function() { queryNodes(); });
+	$('#search-bar').on('keydown', function() { setTimeout(queryNodes, 100) });
 
 	$('#file_save').on('change', function()
 	{

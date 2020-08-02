@@ -35,3 +35,4 @@ app.on('create', function()
     window.frame.show();
 	window.frame.center();
 });
+  
