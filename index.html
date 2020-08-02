@@ -11,6 +11,10 @@
 		<script src="lib/joint.shapes.devs.min.js"></script>
 	</head>
 	<body>
+		<div id="search-box">
+			<input id="search-bar" type="text" placeholder="#tag or string">
+			<button id="search-clear-button" type="reset" onclick="clearQuery()">X</button>
+		</div>
 		<input type="file" id="file_open" accept=".dl" style="display: none;" />
 		<input type="file" id="file_save" accept=".dl" style="display: none;" nwsaveas="dialogue.dl" />
 		<div id="flash"></div>

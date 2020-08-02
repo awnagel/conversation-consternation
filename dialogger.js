@@ -1,5 +1,6 @@
 var fs = require('fs');
-const { remote } = require('electron')
+const { remote } = require('electron');
+const { clear } = require('console');
 const { Menu, MenuItem, dialog } = remote
 
 // Constants
@@ -83,7 +84,7 @@ joint.shapes.dialogue.BaseView = joint.shapes.devs.ModelView.extend(
 {
 	template:
 	[
-		'<div class="node">',
+		'<div id="" class="node">',
 		'<span class="label"></span>',
 		'<button class="delete">x</button>',
 		'<p><textarea class="name" rows="4" cols="27" placeholder="Speech"></textarea></p>',
@@ -147,6 +148,7 @@ joint.shapes.dialogue.BaseView = joint.shapes.devs.ModelView.extend(
 		var type = this.model.get('type').slice('dialogue.'.length);
 		label.text(type);
 		label.attr('class', 'label ' + type);
+		this.$box.attr('id', this.model.id);
 		this.$box.css({ width: bbox.width, height: bbox.height, left: bbox.x, top: bbox.y, transform: 'rotate(' + (this.model.get('angle') || 0) + 'deg)' });
 	},
 
@@ -252,7 +254,6 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 			for (var i = 0; i < tagFields.length; i++)
 			{
 				var field = $(tagFields[i]);
-				console.log(field);
 				if (!field.is(':focus'))
 					field.val(tags[i]);
 			}
@@ -719,6 +720,73 @@ func.exit = function()
 	}
 };
 
+// Probably a faster algorithm out there.
+
+function queryNodes() {
+	var $searchbar = $("#search-bar");
+	
+	var searchTerms = $searchbar.val();
+	var cells = state.graph.toJSON().cells
+
+	searchTerms = searchTerms.split(" ");
+
+	if (cells.length === 0)
+		return;
+
+	clearQuery();
+
+	for (var i = 0; i < cells.length; i++) {
+		var cell = cells[i];
+
+		if (cell.type != 'link')
+		{
+			var type =  cell.type.slice('dialogue.'.length);
+			if (type === 'Text' || type == 'Choice') {
+				// Check for tags and keywords
+				var tags = cell.tags;
+				var speech = cell.name;
+
+				for (var j = 0; j < searchTerms.length; j++) {
+					var term = searchTerms[j];
+
+					if (term[0] === '#' && tags != null) {
+						for (var k = 0; k < cell.tags.length; k++) {
+							if (cell.tags[k] === term)
+								GetNodeById(cell.id).attr('class', 'node highlight');
+						}
+					}
+					else if (term[0] != '#') {
+						speech = speech.split(" ");
+
+						for (var k = 0; k < speech.length; k++) {
+							if (speech[k] == term) {
+								GetNodeById(cell.id).attr('class', 'node highlight');
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+function clearQuery() {
+	var $searchbar = $("#search-bar");
+	$searchbar.val("");
+
+	var cells = state.graph.toJSON().cells
+
+	for (var i = 0; i < cells.length; i++) {
+		var cell = cells[i];
+
+		GetNodeById(cell.id).attr('class', 'node');
+	}
+}
+
+function GetNodeById(ID) {
+	return $("div#" + ID + ".node");
+}
+
 // Initialize
 
 (function()
@@ -780,6 +848,8 @@ func.exit = function()
 		$this.wrap('<form>').parent('form').trigger('reset');
 		$this.unwrap();
 	});
+
+	$('#search-bar').on('change', function() { queryNodes(); });
 
 	$('#file_save').on('change', function()
 	{
