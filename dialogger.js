@@ -113,6 +113,11 @@ joint.shapes.dialogue.BaseView = joint.shapes.devs.ModelView.extend(
 			this.model.set('name', $(evt.target).val());
 		}, this));
 
+		this.$box.find('input.actor').on('change', _.bind(function(evt)
+		{
+			this.model.set('actor', $(evt.target).val());
+		}, this));
+
 		this.$box.find('.delete').on('click', _.bind(this.model.remove, this.model));
 		// Update the box position whenever the underlying model changes.
 		this.model.on('change', this.updateBox, this);
@@ -143,6 +148,10 @@ joint.shapes.dialogue.BaseView = joint.shapes.devs.ModelView.extend(
 		if (!textAreaField.is(':focus')) {
 			textAreaField.val(this.model.get('name'))
 		}
+
+		var actorField = this.$box.find('input.name');
+		if (!actorField.is(':focus'))
+			actorField.val(this.model.get('actor'));
 
 		var label = this.$box.find('.label');
 		var type = this.model.get('type').slice('dialogue.'.length);
@@ -726,8 +735,6 @@ func.exit = function()
 function queryNodes() {
 	var $searchbar = $("#search-bar");
 
-	console.log($searchbar.val());
-	
 	var searchTerms = $searchbar.val();
 	var cells = state.graph.toJSON().cells
 
@@ -736,31 +743,38 @@ function queryNodes() {
 	if (cells.length === 0)
 		return;
 
+	if (searchTerms === null || searchTerms == "")
+		return;
+
 	clearQuery(false);
 
 	for (var i = 0; i < cells.length; i++) {
 		var cell = cells[i];
 
-		if (cell.type != 'link')
+		var type = cell.type.slice('dialogue.'.length);
+		if (type === "Text" || type === "Choice")
 		{
-			var type = cell.type.slice('dialogue.'.length);
-			if (type === 'Text' || type == 'Choice') {
-				// Check for tags and keywords
-				var tags = cell.tags;
-				var speech = cell.name;
+			var speech = cell.name.split(" ");
+			
+			for (var j = 0; j < searchTerms.length; j++) {
+				var term = searchTerms[j];
 
-				for (var j = 0; j < searchTerms.length; j++) {
-					var term = searchTerms[j];
-
-					if (term[0] === '#' && tags != null) {
+				if (term[0] === '#') {
+					if (cell.tags != null && cell.tags != []) {
 						for (var k = 0; k < cell.tags.length; k++) {
 							if (cell.tags[k] === term)
 								GetNodeById(cell.id).attr('class', 'node highlight');
 						}
 					}
-					else if (term[0] != '#') {
-						speech = speech.split(" ");
-
+				}
+				else if (term[0] === '$') {
+					if (cell.actor != null && cell.actor != "") {
+						if (cell.actor === term.substring(1))
+								GetNodeById(cell.id).attr('class', 'node highlight');
+					}
+				}
+				else {
+					if (speech != null && speech != "") {
 						for (var k = 0; k < speech.length; k++) {
 							if (speech[k] == term)
 								GetNodeById(cell.id).attr('class', 'node highlight');
