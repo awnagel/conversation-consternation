@@ -480,6 +480,10 @@ joint.shapes.dialogue.SetView = joint.shapes.dialogue.BaseView.extend(
 
 		for (var i = 0; i < globalVariables.length; i++) {
 			var global = globalVariables[i];
+
+			if (global == null)
+				continue;
+
 			var $el = $('<option class="variable">' + global + '</option>');
 			$el.val(global);
 
@@ -808,28 +812,33 @@ function queryNodes() {
 		var cell = cells[i];
 
 		var type = cell.type.slice('dialogue.'.length);
-		if (type === "Text" || type === "Choice")
-		{
-			var speech = cell.name.split(" ");
-			
-			for (var j = 0; j < searchTerms.length; j++) {
-				var term = searchTerms[j];
+		for (var j = 0; j < searchTerms.length; j++) {
+			var term = searchTerms[j];
 
-				if (term[0] === '#') {
-					if (cell.tags != null && cell.tags != []) {
-						for (var k = 0; k < cell.tags.length; k++) {
-							if (cell.tags[k] === term)
-								GetNodeById(cell.id).attr('class', 'node highlight');
-						}
+			if (term[0] === '#') {
+				if (cell.tags != null && cell.tags != []) {
+					for (var k = 0; k < cell.tags.length; k++) {
+						if (cell.tags[k] === term)
+							GetNodeById(cell.id).attr('class', 'node highlight');
 					}
 				}
-				else if (term[0] === '$') {
-					if (cell.actor != null && cell.actor != "") {
-						if (cell.actor === term.substring(1))
-								GetNodeById(cell.id).attr('class', 'node highlight');
-					}
+			}
+			else if (term[0] === '$') {
+				if (cell.actor != null && cell.actor != "") {
+					if (cell.actor === term.substring(1))
+							GetNodeById(cell.id).attr('class', 'node highlight');
 				}
-				else {
+			}
+			else if (term[0] === '@') {
+				if (type === 'Branch' || type === 'Set') {
+					if (cell.name === term.substring(1))
+						GetNodeById(cell.id).attr('class', 'node highlight');
+				}
+			}
+			else {
+				if (type === 'Choice' || type === 'Text') {
+					var speech = cell.name.split(" ");
+
 					if (speech != null && speech != "") {
 						for (var k = 0; k < speech.length; k++) {
 							if (speech[k] == term)
@@ -896,6 +905,7 @@ function UpdateGlobalVariables() {
 			if (!globals.includes($(evt.target).val())) {
 				globals[i - 1] = $(evt.target).val();
 				globalVariables = globals;
+				UpdateChoiceDropdowns();
 			}
 			else {
 				$(evt.target).val("");
@@ -913,6 +923,22 @@ function UpdateGlobalVariables() {
 
 		if (!field.is(':focus'))
 			field.val(globalVariables[i]);
+	}
+}
+
+function UpdateChoiceDropdowns() {
+	var cells = state.graph.toJSON().cells
+
+	if (cells.length == 0)
+		return;
+
+	for (var i = 0; i < cells.length; i++) {
+		var cell = cells[i];
+		var type = cell.type.slice('dialogue.'.length);
+
+		if (type === 'Branch' || type === 'Set') {
+			state.graph.getCell(cell.id)._events.change[0].context.updateBox();
+		}
 	}
 }
 
