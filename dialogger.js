@@ -57,9 +57,10 @@ var state =
 	mouse_position: { x: 0, y: 0 },
 	context_position: { x: 0, y: 0 },
 	menu: null,
+	globalVariables: [],
 };
 
-var globalVariables = [];
+//var globalVariables = [];
 // Models
 
 joint.shapes.dialogue = {};
@@ -371,10 +372,13 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 			$(selectFields[i]).remove();
 		}
 
-		for (var i = 0; i < globalVariables.length; i++) {
-			var global = globalVariables[i];
+		for (var i = 0; i < state.globalVariables.length; i++) {
+			var global = state.globalVariables[i];
 			var $el = $('<option class="variable">' + global + '</option>');
 			$el.val(global);
+
+			if (global == null)
+				continue;
 
 			this.$box.find('select.variableSelect').append($el);
 		}
@@ -478,8 +482,8 @@ joint.shapes.dialogue.SetView = joint.shapes.dialogue.BaseView.extend(
 			$(selectFields[i]).remove();
 		}
 
-		for (var i = 0; i < globalVariables.length; i++) {
-			var global = globalVariables[i];
+		for (var i = 0; i < state.globalVariables.length; i++) {
+			var global = state.globalVariables[i];
 
 			if (global == null)
 				continue;
@@ -582,7 +586,7 @@ func.optimized_data = function()
 	var nodesByID = {};
 	var cellsByID = {};
 	var nodes = [];
-	nodes.push(globalVariables);
+	nodes.push(state.globalVariables);
 	for (var i = 0; i < cells.length; i++)
 	{
 		var cell = cells[i];
@@ -717,7 +721,11 @@ func.do_save = function()
 {
 	if (state.filepath)
 	{
-		fs.writeFileSync(state.filepath, JSON.stringify(state.graph), 'utf8');
+		// Probably a better way of doing this, especially when adding actors and other stuff.
+		var dl_data = JSON.stringify(state.graph);
+		dl_data = JSON.parse(dl_data);
+		dl_data.globals = state.globalVariables;
+		fs.writeFileSync(state.filepath, JSON.stringify(dl_data), 'utf8');
 		fs.writeFileSync(func.optimized_filename(state.filepath), JSON.stringify(func.optimized_data(), null, "\t"), 'utf8');
 		func.flash('Saved ' + state.filepath);
 	}
@@ -764,7 +772,10 @@ func.handle_open_files = function(files)
 	var data = fs.readFileSync(state.filepath);
 	document.title = func.filename_from_filepath(state.filepath);
 	state.graph.clear();
-	state.graph.fromJSON(JSON.parse(data));
+	var data = JSON.parse(data);
+	state.globalVariables = data.globals;
+	UpdateGlobalVariables();
+	state.graph.fromJSON(data);
 };
 
 func.handle_save_files = function(files)
@@ -871,20 +882,20 @@ function GetNodeById(ID) {
 }
 
 function AddGlobalVar() {
-	globalVariables.push(null);
+	state.globalVariables.push(null);
 	UpdateGlobalVariables();
 }
 
 function RemoveGlobalVar(index) {
 	console.log('delete');
-	globalVariables.splice(index, 1);
+	state.globalVariables.splice(index, 1);
 	UpdateGlobalVariables();
 }
 
 function UpdateGlobalVariables() {
 	var $box = $('#globals-box');
 
-	var globals = globalVariables;
+	var globals = state.globalVariables;
 	var globalFields = $box.find('div.varBox');
 
 	for (var i = globalFields.length; i < globals.length; i++) {
@@ -892,7 +903,7 @@ function UpdateGlobalVariables() {
 		$variableField.attr('placeholder', 'Variable Name');
 		$variableField.on('mousedown click', function(evt) { evt.stopPropagation(); });
 		
-		var $destroyButton = $('<button id="remove-global-var" type="button" onClick="RemoveGlobalVar(' + i.toString() + ')">-</button>');
+		var $destroyButton = $('<button class="hot-menu-button" type="button" onClick="RemoveGlobalVar(' + i.toString() + ')">-</button>');
 
 		$varBox = $('<div class="varBox"></div>');
 		$varBox.append($variableField);
@@ -901,10 +912,10 @@ function UpdateGlobalVariables() {
 		$box.append($varBox);
 		$variableField.on('change', _.bind(function(evt)
 		{
-			var globals = globalVariables;
+			var globals = state.globalVariables;
 			if (!globals.includes($(evt.target).val())) {
 				globals[i - 1] = $(evt.target).val();
-				globalVariables = globals;
+				state.globalVariables = globals;
 				UpdateChoiceDropdowns();
 			}
 			else {
@@ -913,7 +924,7 @@ function UpdateGlobalVariables() {
 		}, this));
 	}
 
-	for (var i = globalVariables.length; i < globalFields.length; i++) {
+	for (var i = state.globalVariables.length; i < globalFields.length; i++) {
 		$(globalFields[i]).remove();
 	}	
 
@@ -922,7 +933,7 @@ function UpdateGlobalVariables() {
 		var field = $(globalFields[i]).find('input.variable');
 
 		if (!field.is(':focus'))
-			field.val(globalVariables[i]);
+			field.val(state.globalVariables[i]);
 	}
 }
 

@@ -16,14 +16,26 @@
 		<div id="flash"></div>
 		<div id="container">
 			<div id="paper">
+				
 				<div id="search-box">
-					<button id="add-global-var" type="button" onclick="AddGlobalVar()">+</button>
-					<!--- <button id="remove-global-var" type="button" onclick="RemoveGlobalVar()">-</button> --->
-					<input id="search-bar" type="text" placeholder="string, #tag, $actor, @variable">
-					<button id="search-clear-button" type="reset" onclick="clearQuery()">X</button>
-					<br>
-					<div id="globals-box">
-
+					<div class="section">
+						<div class="header"><center>search</center></div>
+						<table>
+							<input id="search-bar" type="text" placeholder="string, #tag, $actor, @variable">
+							<button class="hot-menu-button" type="reset" onclick="clearQuery()">X</button>
+						</table>
+					</div>
+					<div class="section">
+						<div class="header">
+							<center>
+								variables
+								<button id="add-button" type="button" onclick="AddGlobalVar()">+</button>
+							</center>
+						</div>
+						<div id="globals-box"></div>
+					</div>
+					<div class="section">
+						<div class="header"><center>actors</center></div>
 					</div>
 				</div>
 			</div>
