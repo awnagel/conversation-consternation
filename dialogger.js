@@ -59,6 +59,7 @@ var state =
 	menu: null,
 };
 
+var globalVariables = [];
 // Models
 
 joint.shapes.dialogue = {};
@@ -315,7 +316,8 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 		'<button class="delete">x</button>',
 		'<button class="add">+</button>',
 		'<button class="remove">-</button>',
-		'<input type="text" class="name" placeholder="Variable" />',
+		//'<input type="text" class="name" placeholder="Variable" />',
+		'<select class="variableSelect" placeholder="Variable Name"></select>',
 		'<input type="text" value="Default" readonly/>',
 		'</div>',
 	].join(''),
@@ -325,6 +327,12 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 		joint.shapes.dialogue.BaseView.prototype.initialize.apply(this, arguments);
 		this.$box.find('.add').on('click', _.bind(this.addPort, this));
 		this.$box.find('.remove').on('click', _.bind(this.removePort, this));
+
+		this.$box.find('select.variableSelect').on('change', _.bind(function(evt)
+		{
+			this.model.set('name', $(evt.target).val());
+			$(evt.target).val(this.model.get('name'));
+		}, this));
 	},
 
 	removePort: function()
@@ -357,6 +365,23 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 		joint.shapes.dialogue.BaseView.prototype.updateBox.apply(this, arguments);
 		var values = this.model.get('values');
 		var valueFields = this.$box.find('input.value');
+
+		var selectFields = this.$box.find('select.variableSelect').find('option.variable');
+		for (var i = 0; i < selectFields.length; i++) {
+			$(selectFields[i]).remove();
+		}
+
+		for (var i = 0; i < globalVariables.length; i++) {
+			var global = globalVariables[i];
+			var $el = $('<option class="variable">' + global + '</option>');
+			$el.val(global);
+
+			this.$box.find('select.variableSelect').append($el);
+		}
+
+		var field = this.$box.find('select.variableSelect');
+		if (!field.is(':focus'))
+			field.val(this.model.get('name'));
 
 		// Add value fields if necessary
 		for (var i = valueFields.length; i < values.length; i++)
@@ -393,8 +418,9 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 
 	updateSize: function()
 	{
-		var textField = this.$box.find('input.name');
+		var textField = this.$box.find('select.variableSelect');
 		var height = textField.outerHeight(true);
+		console.log(textField);
 		this.model.set('size', { width: 200, height: 100 + Math.max(0, (this.model.get('outPorts').length - 1) * height) });
 	},
 });
@@ -421,7 +447,8 @@ joint.shapes.dialogue.SetView = joint.shapes.dialogue.BaseView.extend(
 		'<div class="node">',
 		'<span class="label"></span>',
 		'<button class="delete">x</button>',
-		'<input type="text" class="name" placeholder="Variable" />',
+		//'<input type="text" class="name" placeholder="Variable" />',
+		'<select class="variableSelect" placeholder="Variable Name"></select>',
 		'<input type="text" class="value" placeholder="Value" />',
 		'</div>',
 	].join(''),
@@ -429,16 +456,41 @@ joint.shapes.dialogue.SetView = joint.shapes.dialogue.BaseView.extend(
 	initialize: function()
 	{
 		joint.shapes.dialogue.BaseView.prototype.initialize.apply(this, arguments);
+
 		this.$box.find('input.value').on('change', _.bind(function(evt)
 		{
 			this.model.set('value', $(evt.target).val());
+		}, this));
+
+		this.$box.find('select.variableSelect').on('change', _.bind(function(evt)
+		{
+			this.model.set('name', $(evt.target).val());
+			$(evt.target).val(this.model.get('name'));
 		}, this));
 	},
 
 	updateBox: function()
 	{
 		joint.shapes.dialogue.BaseView.prototype.updateBox.apply(this, arguments);
-		var field = this.$box.find('input.value');
+
+		var selectFields = this.$box.find('select.variableSelect').find('option.variable');
+		for (var i = 0; i < selectFields.length; i++) {
+			$(selectFields[i]).remove();
+		}
+
+		for (var i = 0; i < globalVariables.length; i++) {
+			var global = globalVariables[i];
+			var $el = $('<option class="variable">' + global + '</option>');
+			$el.val(global);
+
+			this.$box.find('select.variableSelect').append($el);
+		}
+
+		var field = this.$box.find('select.variableSelect');
+		if (!field.is(':focus'))
+			field.val(this.model.get('name'));
+
+		field = this.$box.find('input.value');
 		if (!field.is(':focus'))
 			field.val(this.model.get('value'));
 	},
@@ -526,6 +578,7 @@ func.optimized_data = function()
 	var nodesByID = {};
 	var cellsByID = {};
 	var nodes = [];
+	nodes.push(globalVariables);
 	for (var i = 0; i < cells.length; i++)
 	{
 		var cell = cells[i];
@@ -731,6 +784,8 @@ func.exit = function()
 	}
 };
 
+// New Stuff, to be sorted later
+
 // Probably a faster algorithm out there.
 
 function queryNodes() {
@@ -804,6 +859,61 @@ function clearQuery(clearSearchText = true) {
 
 function GetNodeById(ID) {
 	return $("div#" + ID + ".node");
+}
+
+function AddGlobalVar() {
+	globalVariables.push(null);
+	UpdateGlobalVariables();
+}
+
+function RemoveGlobalVar(index) {
+	console.log('delete');
+	globalVariables.splice(index, 1);
+	UpdateGlobalVariables();
+}
+
+function UpdateGlobalVariables() {
+	var $box = $('#globals-box');
+
+	var globals = globalVariables;
+	var globalFields = $box.find('div.varBox');
+
+	for (var i = globalFields.length; i < globals.length; i++) {
+		var $variableField = $('<input type="text" class="variable"/>');
+		$variableField.attr('placeholder', 'Variable Name');
+		$variableField.on('mousedown click', function(evt) { evt.stopPropagation(); });
+		
+		var $destroyButton = $('<button id="remove-global-var" type="button" onClick="RemoveGlobalVar(' + i.toString() + ')">-</button>');
+
+		$varBox = $('<div class="varBox"></div>');
+		$varBox.append($variableField);
+		$varBox.append($destroyButton);
+
+		$box.append($varBox);
+		$variableField.on('change', _.bind(function(evt)
+		{
+			var globals = globalVariables;
+			if (!globals.includes($(evt.target).val())) {
+				globals[i - 1] = $(evt.target).val();
+				globalVariables = globals;
+			}
+			else {
+				$(evt.target).val("");
+			}
+		}, this));
+	}
+
+	for (var i = globalVariables.length; i < globalFields.length; i++) {
+		$(globalFields[i]).remove();
+	}	
+
+	globalFields = $box.find('div.varBox');
+	for (var i = 0; i < globalFields.length; i++) {
+		var field = $(globalFields[i]).find('input.variable');
+
+		if (!field.is(':focus'))
+			field.val(globalVariables[i]);
+	}
 }
 
 // Initialize
@@ -944,6 +1054,9 @@ function GetNodeById(ID) {
 	});
 
 	$(window).trigger('resize');
+
+	//TODO: Could just run whenever the user changes something.
+	//setInterval(UpdateGlobalVariables, 100);
 
 	// Context menu
 

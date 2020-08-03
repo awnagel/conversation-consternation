@@ -331,6 +331,8 @@ span
 	padding: 5px;
 	display: inline-block;
 	border-radius: 4px;
+	position: fixed;
+	z-index: 10;
 }
 
 #search-bar {
@@ -345,5 +347,27 @@ span
 }
 
 #search-clear-button:hover {
+	background-color: #c0392b;
+}
+
+#add-global-var {
+	border: none;
+	cursor: pointer;
+	margin-top: 2px;
+	margin-left: 2px;	
+}
+
+#add-global-var:hover {
+	background-color: #c0392b;
+}
+
+#remove-global-var {
+	border: none;
+	cursor: pointer;
+	margin-top: 2px;
+	margin-left: 2px;	
+}
+
+#remove-global-var:hover {
 	background-color: #c0392b;
 }
