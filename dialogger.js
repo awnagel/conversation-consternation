@@ -1007,7 +1007,7 @@ function UpdateActorsMenu() {
 		var $actorNameField = $('<input type="text" class="value" />');
 		$actorNameField.attr('placeholder', 'Name');
 
-		var $actorPortraitFileNameField = $('<button id="portrait-file-select" onclick="PortraitFile(' + i + ')">Select</button>');
+		var $actorPortraitFileNameField = $('<button id="portrait-file-select" onclick="PortraitFile(' + i + ')">Portrait</button>');
 		$actorPortraitFileNameField.attr('placeholder', 'Portrait');
 
 		var $potraitFileNameTitle = $('<span class="portrait-filename-preview" id="portrait-filename' + i.toString() + '" />');
@@ -1038,6 +1038,7 @@ function UpdateActorsMenu() {
 		{
 			var actors = state.actors;
 			actors[i - 1].name = $(evt.target).val();
+			$actorBox.find('button.collapsible').text($(evt.target).val());
 			state.actors = actors;
 		}, this));
 	}
@@ -1052,6 +1053,9 @@ function UpdateActorsMenu() {
 
 		if (!field.is(':focus'))
 			field.val(state.actors[i].name);
+
+		if (state.actors[i].name != null)
+			field = $(actorFields[i]).find('button.collapsible').text(state.actors[i].name);
 
 		//console.log(state.actors[i].portraitfile.replace(/^.*[\\\/]/, ''));
 
