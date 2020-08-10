@@ -217,6 +217,7 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 			'<input type="actor" class="actor" placeholder="Actor" />',
 			'<button class="add">+</button>',
 			'<button class="remove">-</button>',
+			'<button class="show">&middot;</button>',
 			'<p><textarea class="name" rows="4" cols="27" placeholder="Speech"></textarea></p>',
 			'</div>',
 		].join(''),
@@ -225,6 +226,7 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 			joint.shapes.dialogue.BaseView.prototype.initialize.apply(this, arguments);
 			this.$box.find('.add').on('click', _.bind(this.addTag, this));
 			this.$box.find('.remove').on('click', _.bind(this.removeTag, this));
+			this.$box.find('.show').on('click', _.bind(this.toggleTagsDisplay, this));
 		},
 
 		addTag: function() {
@@ -241,11 +243,43 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 			this.updateSize();
 		},
 
+		toggleTagsDisplay: function() {
+			var fields = this.$box.find('input.tag');
+
+			if (fields.length == 0)
+				return;
+
+			var t = "";
+
+			if (fields[0].style.display == "none") {
+				t = "grid";
+			}
+			else if (fields[0].style.display == "grid") {
+				t = "none";
+			}
+			else {
+				t = "none";
+			}
+
+			for (var i = 0; i < fields.length; i++) {
+				fields[i].style.display = t;
+			}
+
+			if (t == "none") {
+				this.$box.find('button.show').text(fields.length);
+			}
+			else {
+				this.$box.find('button.show').text('');
+			}
+
+			this.updateSize();
+		},
+
 		updateBox: function() {
 			joint.shapes.dialogue.BaseView.prototype.updateBox.apply(this, arguments);
 			var tags = this.model.get('tags');
 			var tagFields = this.$box.find('input.tag');
-
+			
 			for (var i = tagFields.length; i < tags.length; i++) {
 				var $field = $('<input type="text" class="tag"/>');
 				$field.attr('placeholder', '#tag');
@@ -276,8 +310,17 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 		{
 			var fields = this.model.get('tags');
 			var tagField = this.$box.find('input.tag');
+
+			var n = 0;
+
+			for (var i = 0; i < tagField.length; i++) {
+				if (tagField[i].style.display != "none") {
+					n++;
+				}
+			}
+
 			var height = tagField.outerHeight(true);
-			this.model.set('size', { width: this.model.get('size').width, height: 110 + Math.max(0, (fields.length) * height) });
+			this.model.set('size', { width: this.model.get('size').width, height: 110 + Math.max(0, (n) * height) });
 		},
 	});
 
