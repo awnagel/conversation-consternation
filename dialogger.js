@@ -583,11 +583,14 @@ func.validate_magnet = function(cellView, magnet)
 
 func.optimized_data = function()
 {
+	var data = {};
+	data.globals = state.globalVariables;
+	data.actors = state.actors;
+
 	var cells = state.graph.toJSON().cells;
 	var nodesByID = {};
 	var cellsByID = {};
 	var nodes = [];
-	nodes.push(state.globalVariables);
 	for (var i = 0; i < cells.length; i++)
 	{
 		var cell = cells[i];
@@ -677,7 +680,9 @@ func.optimized_data = function()
 			}
 		}
 	}
-	return nodes;
+
+	data.nodes = nodes;
+	return data;
 };
 
 // Menu actions
@@ -726,6 +731,7 @@ func.do_save = function()
 		var dl_data = JSON.stringify(state.graph);
 		dl_data = JSON.parse(dl_data);
 		dl_data.globals = state.globalVariables;
+		dl_data.actors = state.actors;
 		fs.writeFileSync(state.filepath, JSON.stringify(dl_data), 'utf8');
 		fs.writeFileSync(func.optimized_filename(state.filepath), JSON.stringify(func.optimized_data(), null, "\t"), 'utf8');
 		func.flash('Saved ' + state.filepath);
@@ -774,9 +780,14 @@ func.handle_open_files = function(files)
 	document.title = func.filename_from_filepath(state.filepath);
 	state.graph.clear();
 	var data = JSON.parse(data);
+
 	state.globalVariables = data.globals;
 	UpdateGlobalVariables();
-	state.graph.fromJSON(data);
+
+	state.actors = data.actors;
+	UpdateActorsMenu();
+
+	state.graph.fromJSON({ "cells" : data.cells });
 };
 
 func.handle_save_files = function(files)
@@ -954,7 +965,7 @@ function UpdateChoiceDropdowns() {
 }
 
 function AddActor() {
-	state.actors.push(null);
+	state.actors.push({"name": null, "portraitfile" : null, "tags": []});
 	UpdateActorsMenu();
 }
 
@@ -1012,8 +1023,6 @@ function UpdateActorsMenu() {
 		$box.append($actorBox);
 
 		var coll = $actorBox.find('button.collapsible');
-
-		state.actors[i] = {"name": null, "portraitfile" : null, "tags": []};
 
 		coll.on("click", function() {
 			this.classList.toggle("active");
