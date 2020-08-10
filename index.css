@@ -369,3 +369,56 @@ span
 	margin-top: 10px;
 	margin-bottom: 10px;
 }
+
+.collapsible {
+	cursor: pointer;
+	padding: 5px;
+	border: none;
+	text-align: left;
+	outline: none;
+	float: left;
+	width: 100%;
+	margin: 4px;
+}
+
+.collapsible:hover {
+	background-color: #8c6;
+	width: 100%;
+}
+
+.actorBox {
+	width: 200px;
+	max-width: 200px;
+}
+
+.actor-content {
+	margin: 6px;
+	padding: 0 2px;
+	display: none;
+	overflow: hidden;
+	max-width: 200px;
+}
+
+.actor-delete {
+	margin-top: 4px;
+	width: 100%;
+}
+
+.actor-delete:hover {
+	background-color: #c0392b;
+}
+
+#portrait-file-select {
+	float: left;
+	margin-top: 5px;
+	width: 50px;
+}
+
+.portrait-filename-preview {
+	margin-left: 4px;
+	display: inline-block;
+  	width: 10em;
+  	overflow: hidden;
+  	white-space: nowrap;
+  	text-overflow: ellipsis;
+}

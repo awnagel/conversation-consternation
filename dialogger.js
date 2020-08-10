@@ -1,5 +1,5 @@
 var fs = require('fs');
-const { remote } = require('electron');
+const { remote, BrowserWindow } = require('electron');
 const { clear } = require('console');
 const { Menu, MenuItem, dialog } = remote
 
@@ -58,6 +58,7 @@ var state =
 	context_position: { x: 0, y: 0 },
 	menu: null,
 	globalVariables: [],
+	actors: [],
 };
 
 //var globalVariables = [];
@@ -887,7 +888,6 @@ function AddGlobalVar() {
 }
 
 function RemoveGlobalVar(index) {
-	console.log('delete');
 	state.globalVariables.splice(index, 1);
 	UpdateGlobalVariables();
 }
@@ -949,6 +949,106 @@ function UpdateChoiceDropdowns() {
 
 		if (type === 'Branch' || type === 'Set') {
 			state.graph.getCell(cell.id)._events.change[0].context.updateBox();
+		}
+	}
+}
+
+function AddActor() {
+	state.actors.push(null);
+	UpdateActorsMenu();
+}
+
+function RemoveActor(index) {
+	state.actors.splice(index, 1);
+	UpdateActorsMenu();
+}
+
+function PortraitFile(index) {
+	let options = {
+		title: "Select Image File",
+		filters: [
+			{name: 'Images', extensions: ['jpg', 'png', 'tga']}
+		],
+		properties: ['openFile']
+	};
+
+	var actor = state.actors[index];
+
+	dialog.showOpenDialog(BrowserWindow, options).then(result => { 
+		
+		if (actor) 
+			actor.portraitfile = result.filePaths[0];
+		
+		$('#portrait-filename' + index.toString()).text(result.filePaths[0].replace(/^.*[\\\/]/, '')); 
+	
+	}).catch(err => { console.log(err) });
+}
+
+function UpdateActorsMenu() {
+	var $box = $('#actors-box');
+
+	var actors = state.actors;
+	var actorFields = $box.find('div.actorBox');
+
+	for (var i = actorFields.length; i < actors.length; i++) {
+		var $actorBox = $('<div class="actorBox"><button type="button" class="collapsible">Actor</button><div class="actor-content"></div></div>');
+
+		var $actorNameField = $('<input type="text" class="value" />');
+		$actorNameField.attr('placeholder', 'Name');
+
+		var $actorPortraitFileNameField = $('<button id="portrait-file-select" onclick="PortraitFile(' + i + ')">Select</button>');
+		$actorPortraitFileNameField.attr('placeholder', 'Portrait');
+
+		var $potraitFileNameTitle = $('<span class="portrait-filename-preview" id="portrait-filename' + i.toString() + '" />');
+
+		var $actorDeleteButton = $('<button type="button" class="actor-delete" onclick="RemoveActor(' + i.toString() + ')">Delete Actor</button>')
+
+		$actorBox.find('div.actor-content').append($actorNameField);
+		$actorBox.find('div.actor-content').append($('<br>'));
+		$actorBox.find('div.actor-content').append($actorPortraitFileNameField);
+		$actorBox.find('div.actor-content').append($potraitFileNameTitle);
+		$actorBox.find('div.actor-content').append($actorDeleteButton);
+
+		$box.append($actorBox);
+
+		var coll = $actorBox.find('button.collapsible');
+
+		state.actors[i] = {"name": null, "portraitfile" : null, "tags": []};
+
+		coll.on("click", function() {
+			this.classList.toggle("active");
+			var content = this.nextElementSibling;
+			if (content.style.display === "block") {
+				content.style.display = "none";
+			} else {
+				content.style.display = "block";
+			}
+		});
+
+		$actorNameField.on('change', _.bind(function(evt)
+		{
+			var actors = state.actors;
+			actors[i - 1].name = $(evt.target).val();
+			state.actors = actors;
+		}, this));
+	}
+
+	for (var i = state.actors.length; i < actorFields.length; i++) {
+		$(actorFields[i]).remove();
+	}
+
+	actorFields = $box.find('div.actorBox');
+	for (var i = 0; i < actorFields.length; i++) {
+		var field = $(actorFields[i]).find('input.value');
+
+		if (!field.is(':focus'))
+			field.val(state.actors[i].name);
+
+		//console.log(state.actors[i].portraitfile.replace(/^.*[\\\/]/, ''));
+
+		if (state.actors[i].portraitfile != null) {
+			field = $('#portrait-filename' + i.toString());
+			field.text(state.actors[i].portraitfile.replace(/^.*[\\\/]/, ''));
 		}
 	}
 }
