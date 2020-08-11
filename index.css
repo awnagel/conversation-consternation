@@ -172,7 +172,7 @@ Node styles
 	color: #fff;
 }
 
-.node input[type="actor"]
+.node select[type="actor"]
 {
 	float: right;
 	border: none;

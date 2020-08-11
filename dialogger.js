@@ -214,7 +214,7 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 			'<div class="node">',
 			'<span class="label"></span>',
 			'<button class="delete">x</button>',
-			'<input type="actor" class="actor" placeholder="Actor" />',
+			'<select type="actor" class="actors" placeholder="Actor"></select>',
 			'<button class="add">+</button>',
 			'<button class="remove">-</button>',
 			'<button class="show">&middot;</button>',
@@ -227,6 +227,12 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 			this.$box.find('.add').on('click', _.bind(this.addTag, this));
 			this.$box.find('.remove').on('click', _.bind(this.removeTag, this));
 			this.$box.find('.show').on('click', _.bind(this.toggleTagsDisplay, this));
+
+			this.$box.find('select.actors').on('change', _.bind(function(evt)
+			{
+				this.model.set('actor', $(evt.target).val());
+				$(evt.target).val(this.model.get('actor'));
+			}, this));
 		},
 
 		addTag: function() {
@@ -280,6 +286,26 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 			var tags = this.model.get('tags');
 			var tagFields = this.$box.find('input.tag');
 			
+			var selectFields = this.$box.find('select.actors').find('option.actor');
+			for (var i = 0; i < selectFields.length; i++) {
+				$(selectFields[i]).remove();
+			}
+
+			for (var i = 0; i < state.actors.length; i++) {
+				var actor = state.actors[i].name;
+				var $el = $('<option class="actor">' + actor+ '</option>');
+				$el.val(actor);
+
+				if (actor == null)
+					continue;
+
+				this.$box.find('select.actors').append($el);
+			}
+
+			var field = this.$box.find('select.actors');
+			if (!field.is(':focus'))
+				field.val(this.model.get('actor'));
+
 			for (var i = tagFields.length; i < tags.length; i++) {
 				var $field = $('<input type="text" class="tag"/>');
 				$field.attr('placeholder', '#tag');
@@ -1258,7 +1284,7 @@ function UpdateActorsMenu() {
 	state.menu.append(new MenuItem({ label: 'Choice', click: func.add_node(joint.shapes.dialogue.Choice) }));
 	state.menu.append(new MenuItem({ label: 'Branch', click: func.add_node(joint.shapes.dialogue.Branch) }));
 	state.menu.append(new MenuItem({ label: 'Set', click: func.add_node(joint.shapes.dialogue.Set) }));
-	state.menu.append(new MenuItem({ label: 'Node', click: func.add_node(joint.shapes.dialogue.Node) }));
+	//state.menu.append(new MenuItem({ label: 'Node', click: func.add_node(joint.shapes.dialogue.Node) }));
 	state.menu.append(new MenuItem({ type: 'separator' }));
 	state.menu.append(new MenuItem({ label: 'Save', click: func.save }));
 	state.menu.append(new MenuItem({ label: 'Open', click: func.show_open_dialog }));
