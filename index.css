@@ -495,13 +495,21 @@ span
 }
 
 .cellBox {
+	/* display: inline-block; */
 	white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-	max-width: 26ch;
+	/* max-width: 26ch; */
 	border-style: solid;
 	border-color: #8c6;
 	background-color: #8c6;
 	border-width: 2px;
 	margin: 2px auto;
+}
+
+.cellBox span.text {
+	max-width: 22ch;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }

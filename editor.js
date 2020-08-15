@@ -253,6 +253,12 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 				this.model.set('actor', $(evt.target).val());
 				$(evt.target).val(this.model.get('actor'));
 			}, this));
+
+			this.$box.find('textarea.name').on('keydown', _.bind(function(evt)
+			{
+				this.model.set('name', $(evt.target).val());
+				UpdateNodeList();
+			}, this));
 		},
 
 		addTag: function() {
@@ -1178,20 +1184,30 @@ function UpdateNodeList() {
 	var cellFields = $box.find('div.cellBox');
 
 	for (var i = cellFields.length; i < cells.length; i++) {
-		var $cellBox = $('<div class=cellBox></div>')
+		var $cellBox = $('<div class=cellBox></div>');
 
 		var type = cells[i].type.slice('dialogue.'.length)
 
 		$cellBox.css("border-color", typeColor[type]);
 		$cellBox.css("background-color", typeColor[type]);
 
-		$cellBox.text(cells[i].id);
+		$cellBox.append('<span class="text"></span>');
+		$cellBox.append('<button class="delete">x</button>');
+
+		$cellBox.children().css("display", "inline-block");
+
+		$cellBox.find('span.text').text(cells[i].id);
 
 		$box.append($cellBox);
 
-		$cellBox.on('click', function(evt) { 
-			var id = $(evt.target).text();
-			GetNodeById(id).attr('class', 'node highlight');
+		//$cellBox.on('click', function(evt) { 
+		//	var id = $(evt.target).text();
+		//	GetNodeById(id).attr('class', 'node highlight');
+		//});
+
+		$cellBox.find('.delete').on('click', function(evt) {
+			var s = $(evt.target).parent().find('span.text').text();
+			console.log(state.graph.getCell(s).remove());
 		});
 	}
 
@@ -1206,7 +1222,19 @@ function UpdateNodeList() {
 		var type = cell.type.slice('dialogue.'.length);
 		field.css("border-color", typeColor[type]);
 		field.css("background-color", typeColor[type]);
-		field.text(cells[i].id);
+		
+
+		if (cell.name == "" && cell.actor == "") {
+			field.find('span.text').text(cell.id);
+		}
+		else {
+			if (cell.name == "") {
+				field.find('span.text').text(cell.actor);
+			}
+			else {
+				field.find('span.text').text(cell.name);
+			}
+		}
 	}
 }
 
