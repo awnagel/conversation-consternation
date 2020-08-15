@@ -14,6 +14,11 @@ html, body
 	background: linear-gradient(to bottom, #7d8ea2 0%,#121413 100%); /* W3C */
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#7d8ea2', endColorstr='#121413',GradientType=0 ); /* IE6-9 */
 	overflow: hidden;
+	stroke: none;
+}
+
+::-webkit-scrollbar {
+    display: none;
 }
 
 #container
@@ -138,28 +143,22 @@ Node styles
 .node
 {
 	position: absolute;
-	background: #666;
+	background: #222;
 	/* Make sure events are propagated to the JointJS element so, e.g. dragging works.*/
 	pointer-events: none;
 	-webkit-user-select: none;
-	padding: 8px;
-	box-sizing: border-box;
+	/* padding: 8px;
+	box-sizing: border-box; */
 	z-index: 2;
 }
 
 .node.highlight
 {
-	position: absolute;
-	background: rgb(146, 144, 144);
-	/* Make sure events are propagated to the JointJS element so, e.g. dragging works.*/
-	pointer-events: none;
-	-webkit-user-select: none;
-	padding: 8px;
-	box-sizing: border-box;
-	z-index: 2;
-	border-color: rgb(255, 230, 85);
-	border-style: solid;
-	border-width: 1px;
+	border-top: solid 4px rgb(255, 230, 85);
+
+	/* border-color: rgb(255, 230, 85);
+	border-style: dotted;
+	border-width: 2px; */
 }
 
 .node input, button, select
@@ -168,8 +167,17 @@ Node styles
 	pointer-events: auto;	
 	border: none;
 	box-sizing: border-box;
-	background-color: #456;
+	/* background-color: #456; */
+	background-color: #333;
 	color: #fff;
+}
+
+.node button {
+	pointer-events: auto;	
+	border: none;
+	box-sizing: border-box;
+	background-color: rgb(176, 188, 199);
+	color: rgb(43, 43, 43);
 }
 
 .node select[type="actor"]
@@ -195,41 +203,44 @@ Node styles
 	pointer-events: auto;	
 	border: none;
 	box-sizing: border-box;
-	background-color: #456;
-	margin-top: -8px;
-	margin-bottom: 8px;
+	background: #333;
+	/* margin-top: -8px;
+	margin-bottom: 8px; */
+	margin-bottom: 2px;
 	color: #fff;
 	float: right;
-	border-radius: 5px;
+	/* border-radius: 5px; */
 	resize: none;
 	position: relative;
 	/*margin: 0 auto;*/
 	width: 100%;
 }
 
-.node .label
+.node .title
 {
-	color: #ddd;
+	background-color: #ddd;
+	display: block;
+	padding: 2px;
 }
 
-.node .label.Text
+.node .title.Text
 {
-	color: #8c6;
+	background-color: #668440;
 }
 
-.node .label.Set
+.node .title.Set
 {
-	color: #acf;
+	background-color: rgb(27, 63, 117);
 }
 
-.node .label.Choice
+.node .title.Choice
 {
-	color: #dc5;
+	background-color: rgb(179, 166, 69);
 }
 
-.node .label.Branch
+.node .title.Branch
 {
-	color: #ea6;
+	background-color: rgb(173, 123, 72);
 }
 
 button
@@ -270,8 +281,15 @@ button.show:hover {
 {
 	width: 100%;
 	padding: 4px;
-	margin-top: 8px;
+	margin-bottom: 2px;
 	display: block;
+	background-color: #333;
+}
+
+.node input.branchOption {
+	width: 100%;
+	margin-bottom: 1px;
+	background-color: #333;
 }
 
 .node
@@ -327,16 +345,17 @@ span
 
 #search-box {
 	background-color: #666;
-	border-style: solid;
+	/* border-style: solid;
 	border-width: 1px;
 	border-color: rgb(58, 58, 58);
 	margin-left: 10px;
-	margin-top: 10px;
+	margin-top: 10px; */
 	padding: 5px;
 	display: inline-block;
-	border-radius: 4px;
+	/* border-radius: 4px; */
 	position: relative;
 	z-index: 10;
+	display: inline-block;
 }
 
 .hot-menu-button {
@@ -467,4 +486,22 @@ span
 .box-parent {
 	display: grid;
 	position: fixed;
+	overflow-x: hidden;
+}
+
+.nodelist-box {
+	background-color: #666;
+	padding: 5px;
+}
+
+.cellBox {
+	white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+	max-width: 26ch;
+	border-style: solid;
+	border-color: #8c6;
+	background-color: #8c6;
+	border-width: 2px;
+	margin: 2px auto;
 }

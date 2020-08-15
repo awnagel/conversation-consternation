@@ -1,11 +1,19 @@
 var fs = require('fs');
 const { remote, BrowserWindow } = require('electron');
 const { clear } = require('console');
-const { Menu, MenuItem, dialog } = remote
+const { Menu, MenuItem, dialog } = remote;
 
 // Constants
 
 //TODO: Tags Permanent.
+
+var typeColor = {
+	"Text" : "#668440",
+	"Choice" : "rgb(179, 166, 69)",
+	"Node" : "#ddd",
+	"Set" : "rgb(27, 63, 117)",
+	"Branch" : "rgb(173, 123, 72)"
+}
 
 var con =
 {
@@ -71,13 +79,13 @@ joint.shapes.dialogue.Base = joint.shapes.devs.Model.extend(
 	(
 		{
 			type: 'dialogue.Base',
-			size: { width: 250, height: 110 },
+			size: { width: 250, height: 50 },
 			name: '',
 			attrs:
 			{
 				rect: { stroke: 'none', 'fill-opacity': 0 },
 				text: { display: 'none' },
-			},
+			}
 		},
 		joint.shapes.devs.Model.prototype.defaults
 	),
@@ -88,9 +96,11 @@ joint.shapes.dialogue.BaseView = joint.shapes.devs.ModelView.extend(
 	template:
 	[
 		'<div id="" class="node">',
+		'<div class="title">',
 		'<span class="label"></span>',
 		'<button class="delete">x</button>',
-		'<p><textarea class="name" rows="4" cols="27" placeholder="Speech"></textarea></p>',
+		'</div>',
+		'<textarea class="name" rows="2" cols="27" placeholder="Speech"></textarea>',
 		'</div>',
 	].join(''),
 
@@ -111,8 +121,10 @@ joint.shapes.dialogue.BaseView = joint.shapes.devs.ModelView.extend(
 			this.model.set('name', $(evt.target).val());
 		}, this));
 
+		autosize(this.$box.find('textarea.name'));
+
 		this.$box.find('textarea.name').on('change', _.bind(function(evt)
-		{
+		{;
 			this.model.set('name', $(evt.target).val());
 		}, this));
 
@@ -126,6 +138,8 @@ joint.shapes.dialogue.BaseView = joint.shapes.devs.ModelView.extend(
 		this.model.on('change', this.updateBox, this);
 		// Remove the box when the model gets removed from the graph.
 		this.model.on('remove', this.removeBox, this);
+
+		UpdateNodeList();
 
 		this.updateBox();
 	},
@@ -157,9 +171,11 @@ joint.shapes.dialogue.BaseView = joint.shapes.devs.ModelView.extend(
 			actorField.val(this.model.get('actor'));
 
 		var label = this.$box.find('.label');
+		var title = this.$box.find('.title');
 		var type = this.model.get('type').slice('dialogue.'.length);
 		label.text(type);
 		label.attr('class', 'label ' + type);
+		title.attr('class', 'title ' + type);
 		this.$box.attr('id', this.model.id);
 		this.$box.css({ width: bbox.width, height: bbox.height, left: bbox.x, top: bbox.y, transform: 'rotate(' + (this.model.get('angle') || 0) + 'deg)' });
 	},
@@ -180,7 +196,9 @@ joint.shapes.dialogue.Node = joint.shapes.devs.Model.extend(
 			outPorts: ['output'],
 			attrs:
 			{
-				'.outPorts circle': { unlimitedConnections: ['dialogue.Choice'], }
+				rotatable: { stroke: 'none' },
+				rect: { stroke: 'none' },
+				'.outPorts circle': { unlimitedConnections: ['dialogue.Choice'] },
 			},
 		},
 		joint.shapes.dialogue.Base.prototype.defaults
@@ -212,13 +230,15 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 		template:
 		[
 			'<div class="node">',
+			'<div class="title">',
 			'<span class="label"></span>',
 			'<button class="delete">x</button>',
 			'<select type="actor" class="actors" placeholder="Actor"></select>',
 			'<button class="add">+</button>',
 			'<button class="remove">-</button>',
 			'<button class="show">&middot;</button>',
-			'<p><textarea class="name" rows="4" cols="27" placeholder="Speech"></textarea></p>',
+			'</div>',
+			'<textarea class="name" rows="2" cols="27" placeholder="Speech"></textarea>',
 			'</div>',
 		].join(''),
 
@@ -236,6 +256,9 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 		},
 
 		addTag: function() {
+			if (this.model.get('tags').length != 0 && this.$box.find('input.tag')[0].style.display == "none")
+				return;
+
 			var tags = this.model.get('tags').slice(0);
 			tags.push(null);
 			this.model.set('tags', tags);
@@ -243,6 +266,9 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 		},
 
 		removeTag: function() {
+			if (this.model.get('tags').length != 0 && this.$box.find('input.tag')[0].style.display == "none")
+				return;
+
 			var tags = this.model.get('tags').slice(0);
 			tags.pop();
 			this.model.set('tags', tags);
@@ -346,7 +372,7 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 			}
 
 			var height = tagField.outerHeight(true);
-			this.model.set('size', { width: this.model.get('size').width, height: 110 + Math.max(0, (n) * height) });
+			this.model.set('size', { width: this.model.get('size').width, height: 50 + Math.max(0, (n) * height) });
 		},
 	});
 
@@ -370,7 +396,7 @@ joint.shapes.dialogue.Branch = joint.shapes.devs.Model.extend(
 	(
 		{
 			type: 'dialogue.Branch',
-			size: { width: 200, height: 100, },
+			size: { width: 200, height: 60, },
 			inPorts: ['input'],
 			outPorts: ['output0'],
 			values: [],
@@ -383,10 +409,12 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 	template:
 	[
 		'<div class="node">',
+		'<div class="title">',
 		'<span class="label"></span>',
 		'<button class="delete">x</button>',
 		'<button class="add">+</button>',
 		'<button class="remove">-</button>',
+		'</div>',
 		//'<input type="text" class="name" placeholder="Variable" />',
 		'<select class="variableSelect" placeholder="Variable Name"></select>',
 		'<input type="text" value="Default" readonly/>',
@@ -435,7 +463,7 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 	{
 		joint.shapes.dialogue.BaseView.prototype.updateBox.apply(this, arguments);
 		var values = this.model.get('values');
-		var valueFields = this.$box.find('input.value');
+		var valueFields = this.$box.find('input.branchOption');
 
 		var selectFields = this.$box.find('select.variableSelect').find('option.variable');
 		for (var i = 0; i < selectFields.length; i++) {
@@ -461,11 +489,12 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 		for (var i = valueFields.length; i < values.length; i++)
 		{
 			// Prevent paper from handling pointerdown.
-			var $field = $('<input type="text" class="value" />');
+			var $field = $('<input class="branchOption" type="text" class="value" />');
 			$field.attr('placeholder', 'Value ' + (i + 1).toString());
 			$field.attr('index', i);
 			this.$box.append($field);
 			$field.on('mousedown click', function(evt) { evt.stopPropagation(); });
+			console.log('append');
 
 			// This is an example of reacting on the input change and storing the input data in the cell model.
 			$field.on('change', _.bind(function(evt)
@@ -476,9 +505,12 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 			}, this));
 		}
 
-		// Remove value fields if necessary
+		// Remove value fields if necessary, except for default field.
 		for (var i = values.length; i < valueFields.length; i++)
+		{
 			$(valueFields[i]).remove();
+		}
+			
 
 		// Update value fields
 		valueFields = this.$box.find('input.value');
@@ -492,10 +524,9 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 
 	updateSize: function()
 	{
-		var textField = this.$box.find('select.variableSelect');
+		var textField = this.$box.find('input.branchOption');
 		var height = textField.outerHeight(true);
-		console.log(textField);
-		this.model.set('size', { width: 200, height: 100 + Math.max(0, (this.model.get('outPorts').length - 1) * height) });
+		this.model.set('size', { width: 200, height: 60 + Math.max(0, (this.model.get('outPorts').length - 1) * height) });
 	},
 });
 
@@ -507,7 +538,7 @@ joint.shapes.dialogue.Set = joint.shapes.devs.Model.extend(
 			type: 'dialogue.Set',
 			inPorts: ['input'],
 			outPorts: ['output'],
-			size: { width: 200, height: 100, },
+			size: { width: 200, height: 60, },
 			value: '',
 		},
 		joint.shapes.dialogue.Base.prototype.defaults
@@ -519,8 +550,10 @@ joint.shapes.dialogue.SetView = joint.shapes.dialogue.BaseView.extend(
 	template:
 	[
 		'<div class="node">',
+		'<div class="title">',
 		'<span class="label"></span>',
 		'<button class="delete">x</button>',
+		'</div>',
 		//'<input type="text" class="name" placeholder="Variable" />',
 		'<select class="variableSelect" placeholder="Variable Name"></select>',
 		'<input type="text" class="value" placeholder="Value" />',
@@ -832,6 +865,7 @@ func.add_node = function(constructor)
 			position: { x: state.context_position.x + container.scrollLeft, y: state.context_position.y + container.scrollTop },
 		});
 		state.graph.addCells([element]);
+		UpdateNodeList();
 	};
 };
 
@@ -1135,6 +1169,47 @@ function UpdateActorsMenu() {
 	}
 }
 
+//TODO: Add scroll to area.
+
+function UpdateNodeList() {
+	var $box = $('div.nodelist-box');
+
+	var cells = state.graph.toJSON().cells;
+	var cellFields = $box.find('div.cellBox');
+
+	for (var i = cellFields.length; i < cells.length; i++) {
+		var $cellBox = $('<div class=cellBox></div>')
+
+		var type = cells[i].type.slice('dialogue.'.length)
+
+		$cellBox.css("border-color", typeColor[type]);
+		$cellBox.css("background-color", typeColor[type]);
+
+		$cellBox.text(cells[i].id);
+
+		$box.append($cellBox);
+
+		$cellBox.on('click', function(evt) { 
+			var id = $(evt.target).text();
+			GetNodeById(id).attr('class', 'node highlight');
+		});
+	}
+
+	for (var i = cells.length; i < cellFields.length; i++) {
+		$(cellFields[i]).remove();
+	}
+
+	cellFields = $box.find('div.cellBox');
+	for (var i = 0; i < cellFields.length; i++) {
+		var field = $(cellFields[i]);
+		var cell = cells[i];
+		var type = cell.type.slice('dialogue.'.length);
+		field.css("border-color", typeColor[type]);
+		field.css("background-color", typeColor[type]);
+		field.text(cells[i].id);
+	}
+}
+
 // Initialize
 
 (function()
@@ -1275,7 +1350,7 @@ function UpdateActorsMenu() {
 	$(window).trigger('resize');
 
 	//TODO: Could just run whenever the user changes something.
-	//setInterval(UpdateGlobalVariables, 100);
+	setInterval(UpdateNodeList, 100);
 
 	// Context menu
 
@@ -1284,7 +1359,7 @@ function UpdateActorsMenu() {
 	state.menu.append(new MenuItem({ label: 'Choice', click: func.add_node(joint.shapes.dialogue.Choice) }));
 	state.menu.append(new MenuItem({ label: 'Branch', click: func.add_node(joint.shapes.dialogue.Branch) }));
 	state.menu.append(new MenuItem({ label: 'Set', click: func.add_node(joint.shapes.dialogue.Set) }));
-	//state.menu.append(new MenuItem({ label: 'Node', click: func.add_node(joint.shapes.dialogue.Node) }));
+	state.menu.append(new MenuItem({ label: 'Node', click: func.add_node(joint.shapes.dialogue.Node) }));
 	state.menu.append(new MenuItem({ type: 'separator' }));
 	state.menu.append(new MenuItem({ label: 'Save', click: func.save }));
 	state.menu.append(new MenuItem({ label: 'Open', click: func.show_open_dialog }));
