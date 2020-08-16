@@ -1219,7 +1219,11 @@ function UpdateActorsMenu() {
 
 //TODO: Add scroll to area.
 
+var globalListActivated = true;
+
 function ToggleGlobalNodeList() {
+	globalListActivated = !globalListActivated;
+
 	$('div.nodelist-box').children("div.cellBox").toggle();
 }
 
@@ -1254,6 +1258,9 @@ function UpdateNodeList() {
 		$cellBox.find('span.text').text(cells[i].id);
 
 		$box.append($cellBox);
+
+		if (!globalListActivated)
+			$box.children().last().toggle();
 	}
 
 	for (var i = cells.length; i < cellFields.length; i++) {
