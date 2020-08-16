@@ -216,6 +216,27 @@ Node styles
 	width: 100%;
 }
 
+.node.note textarea {
+	pointer-events: auto;	
+	border: none;
+	box-sizing: border-box;
+	background-color: rgb(247, 237, 165);
+	margin-bottom: 2px;
+	color: rgb(0, 0, 0);
+	float: right;
+	resize: none;
+	position: relative;
+	/*margin: 0 auto;*/
+	width: 100%;
+}
+
+.node.note span.header-img {
+	padding-right:3px; 
+	padding-top: 3px; 
+	display:inline-block;
+	transform: rotate(45deg);
+}
+
 .node .title
 {
 	background-color: #ddd;
@@ -241,6 +262,12 @@ Node styles
 .node .title.Branch
 {
 	background-color: rgb(173, 123, 72);
+}
+
+.node .title.Note
+{
+	background-color: rgb(247, 237, 165);
+	color: black;
 }
 
 button

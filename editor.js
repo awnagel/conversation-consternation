@@ -12,7 +12,8 @@ var typeColor = {
 	"Choice" : "rgb(179, 166, 69)",
 	"Node" : "#ddd",
 	"Set" : "rgb(27, 63, 117)",
-	"Branch" : "rgb(173, 123, 72)"
+	"Branch" : "rgb(173, 123, 72)",
+	"Note" : "rgb(247, 237, 165)"
 }
 
 var con =
@@ -623,6 +624,32 @@ joint.shapes.dialogue.SetView = joint.shapes.dialogue.BaseView.extend(
 	},
 });
 
+joint.shapes.dialogue.Note = joint.shapes.devs.Model.extend(
+{
+	defaults: joint.util.deepSupplement
+	(
+		{
+			type: 'dialogue.Note',
+		},
+		joint.shapes.dialogue.Base.prototype.defaults
+	),
+});
+joint.shapes.dialogue.NoteView = joint.shapes.dialogue.BaseView.extend(
+{
+	template:
+	[
+		'<div class="node note">',
+		'<div class="title">',
+		'<span class="header-img">',
+		'<img src="g/attach_file.png"></img>',
+		'</span>',
+		'<button class="delete">x</button>',
+		'</div>',
+		'<textarea class="name" rows="6" cols="27" placeholder="Speech"></textarea>',
+		'</div>',
+	].join(''),
+});
+
 // Functions
 
 var func = {};
@@ -712,6 +739,11 @@ func.optimized_data = function()
 	for (var i = 0; i < cells.length; i++)
 	{
 		var cell = cells[i];
+
+		if (cell.type == 'dialogue.Note') {
+			continue;
+		}
+
 		if (cell.type != 'link')
 		{
 			var node =
@@ -1198,6 +1230,8 @@ function UpdateNodeList() {
 
 		var type = cells[i].type.slice('dialogue.'.length)
 
+		$cellBox.attr("id", cells[i].id);
+
 		$cellBox.css("border-color", typeColor[type]);
 		$cellBox.css("background-color", typeColor[type]);
 
@@ -1210,15 +1244,9 @@ function UpdateNodeList() {
 
 		$box.append($cellBox);
 
-		//$cellBox.on('click', function(evt) { 
-		//	var id = $(evt.target).text();
-		//	GetNodeById(id).attr('class', 'node highlight');
+		//$cellBox.find('.delete').on('click', { id: $cellBox.attr("id") } ,function(evt) {
+		//	state.graph.getCell(evt.data.id).remove();
 		//});
-
-		$cellBox.find('.delete').on('click', function(evt) {
-			var s = $(evt.target).parent().find('span.text').text();
-			console.log(state.graph.getCell(s).remove());
-		});
 	}
 
 	for (var i = cells.length; i < cellFields.length; i++) {
@@ -1232,7 +1260,21 @@ function UpdateNodeList() {
 		var type = cell.type.slice('dialogue.'.length);
 		field.css("border-color", typeColor[type]);
 		field.css("background-color", typeColor[type]);
+		field.attr("id", cell.id);
 		
+		field.find('span.text').text(cell.id);
+
+		// Look out, this has caused problems, may still not work.
+		field.find('.delete').off().on('click', { id: cell.id }, function(evt) {
+			state.graph.getCell(evt.data.id).remove();
+		});
+
+		if (cell.type.slice('dialogue.'.length) == "Note") {
+			field.css("color", "black");
+		}
+		else {
+			field.css("color", "white");
+		}
 
 		if (cell.name == "" && cell.actor == "") {
 			field.find('span.text').text(cell.id);
@@ -1397,7 +1439,7 @@ function UpdateNodeList() {
 	state.menu.append(new MenuItem({ label: 'Choice', click: func.add_node(joint.shapes.dialogue.Choice) }));
 	state.menu.append(new MenuItem({ label: 'Branch', click: func.add_node(joint.shapes.dialogue.Branch) }));
 	state.menu.append(new MenuItem({ label: 'Set', click: func.add_node(joint.shapes.dialogue.Set) }));
-	state.menu.append(new MenuItem({ label: 'Node', click: func.add_node(joint.shapes.dialogue.Node) }));
+	state.menu.append(new MenuItem({ label: 'Note', click: func.add_node(joint.shapes.dialogue.Note) }));
 	state.menu.append(new MenuItem({ type: 'separator' }));
 	state.menu.append(new MenuItem({ label: 'Save', click: func.save }));
 	state.menu.append(new MenuItem({ label: 'Open', click: func.show_open_dialog }));
