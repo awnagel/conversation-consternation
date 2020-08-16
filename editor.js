@@ -141,6 +141,14 @@ joint.shapes.dialogue.BaseView = joint.shapes.devs.ModelView.extend(
 
 		UpdateNodeList();
 
+		this.$box.find('textarea.name').on('keydown', _.bind(function(evt)
+		{
+			setTimeout(_.bind(function(evt, model) {
+				model.set('name', $(evt.target).val());
+				UpdateNodeList();
+			}), 100, evt, this.model);
+		}, this));
+
 		this.updateBox();
 	},
 
@@ -254,11 +262,13 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 				$(evt.target).val(this.model.get('actor'));
 			}, this));
 
-			this.$box.find('textarea.name').on('keydown', _.bind(function(evt)
-			{
-				this.model.set('name', $(evt.target).val());
-				UpdateNodeList();
-			}, this));
+			// this.$box.find('textarea.name').on('keydown', _.bind(function(evt)
+			// {
+			// 	setTimeout(_.bind(function(evt, model) {
+			// 		model.set('name', $(evt.target).val());
+			// 		UpdateNodeList();
+			// 	}), 100, evt, this.model);
+			// }, this));
 		},
 
 		addTag: function() {
