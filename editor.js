@@ -1222,8 +1222,15 @@ function UpdateActorsMenu() {
 function UpdateNodeList() {
 	var $box = $('div.nodelist-box');
 
-	var cells = state.graph.toJSON().cells;
+	var all_cells = state.graph.toJSON().cells
+	var cells = [];
 	var cellFields = $box.find('div.cellBox');
+
+	for (var i = 0; i < all_cells.length; i++) {
+		if (all_cells[i].type != 'link') {
+			cells.push(all_cells[i]);
+		}
+	}
 
 	for (var i = cellFields.length; i < cells.length; i++) {
 		var $cellBox = $('<div class=cellBox></div>');
