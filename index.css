@@ -515,6 +515,7 @@ span
 	position: fixed;
 	overflow-x: hidden;
 	z-index: 1000;
+	max-width: 210px;
 }
 
 .nodelist-box {
@@ -540,4 +541,13 @@ span
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
+}
+
+#show-global-nodes {
+	margin: 2px;
+    width: 100%;
+}
+
+#show-global-nodes:hover {
+	background-color: #8c6;
 }

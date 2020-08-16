@@ -80,7 +80,7 @@ joint.shapes.dialogue.Base = joint.shapes.devs.Model.extend(
 	(
 		{
 			type: 'dialogue.Base',
-			size: { width: 250, height: 50 },
+			size: { width: 210, height: 50 },
 			name: '',
 			attrs:
 			{
@@ -1219,6 +1219,10 @@ function UpdateActorsMenu() {
 
 //TODO: Add scroll to area.
 
+function ToggleGlobalNodeList() {
+	$('div.nodelist-box').children("div.cellBox").toggle();
+}
+
 function UpdateNodeList() {
 	var $box = $('div.nodelist-box');
 
@@ -1250,10 +1254,6 @@ function UpdateNodeList() {
 		$cellBox.find('span.text').text(cells[i].id);
 
 		$box.append($cellBox);
-
-		//$cellBox.find('.delete').on('click', { id: $cellBox.attr("id") } ,function(evt) {
-		//	state.graph.getCell(evt.data.id).remove();
-		//});
 	}
 
 	for (var i = cells.length; i < cellFields.length; i++) {
