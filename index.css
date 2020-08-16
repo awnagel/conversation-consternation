@@ -514,6 +514,7 @@ span
 	display: grid;
 	position: fixed;
 	overflow-x: hidden;
+	z-index: 1000;
 }
 
 .nodelist-box {
