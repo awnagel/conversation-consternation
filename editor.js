@@ -98,7 +98,9 @@ joint.shapes.dialogue.BaseView = joint.shapes.devs.ModelView.extend(
 	[
 		'<div id="" class="node">',
 		'<div class="title">',
-		'<span class="label"></span>',
+		'<span class="header-img">',
+		'<img src="g/directions.png"></img>',
+		'</span>',
 		'<button class="delete">x</button>',
 		'</div>',
 		'<textarea class="name" rows="2" cols="27" placeholder="Speech"></textarea>',
@@ -239,8 +241,11 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 		template:
 		[
 			'<div class="node">',
+			//'<div class="title">',
 			'<div class="title">',
-			'<span class="label"></span>',
+			'<span class="header-img">',
+			'<img src="g/article.png"></img>',
+			'</span>',
 			'<button class="delete">x</button>',
 			'<select type="actor" class="actors" placeholder="Actor"></select>',
 			'<button class="add">+</button>',
@@ -262,14 +267,6 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend(
 				this.model.set('actor', $(evt.target).val());
 				$(evt.target).val(this.model.get('actor'));
 			}, this));
-
-			// this.$box.find('textarea.name').on('keydown', _.bind(function(evt)
-			// {
-			// 	setTimeout(_.bind(function(evt, model) {
-			// 		model.set('name', $(evt.target).val());
-			// 		UpdateNodeList();
-			// 	}), 100, evt, this.model);
-			// }, this));
 		},
 
 		addTag: function() {
@@ -427,7 +424,10 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 	[
 		'<div class="node">',
 		'<div class="title">',
-		'<span class="label"></span>',
+		'<div class="title">',
+		'<span class="header-img">',
+		'<img src="g/alt_route.png"></img>',
+		'</span>',
 		'<button class="delete">x</button>',
 		'<button class="add">+</button>',
 		'<button class="remove">-</button>',
@@ -568,7 +568,10 @@ joint.shapes.dialogue.SetView = joint.shapes.dialogue.BaseView.extend(
 	[
 		'<div class="node">',
 		'<div class="title">',
-		'<span class="label"></span>',
+		'<div class="title">',
+		'<span class="header-img">',
+		'<img src="g/login.png"></img>',
+		'</span>',
 		'<button class="delete">x</button>',
 		'</div>',
 		//'<input type="text" class="name" placeholder="Variable" />',
