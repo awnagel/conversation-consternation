@@ -439,6 +439,9 @@ joint.shapes.dialogue.ChoiceView = joint.shapes.dialogue.BaseView.extend(
 			this.model.set('choices', choices);
 			this.updateSize();
 		}
+		else if (this.model.get('outPorts').length == 1){
+			this.model.remove();
+		}
 	},
 
 	addPort: function()
@@ -454,9 +457,6 @@ joint.shapes.dialogue.ChoiceView = joint.shapes.dialogue.BaseView.extend(
 
 	updateBox: function()
 	{
-		console.clear();
-		console.log(this.model.get('choices').slice(0));
-
 		joint.shapes.dialogue.BaseView.prototype.updateBox.apply(this, arguments);
 
 		var choices = this.model.get('choices');
@@ -949,8 +949,7 @@ func.optimized_data = function()
 	}
 
 	data.nodes = nodes;
-	console.log(data);
-	//return data;
+	return data;
 };
 
 // Menu actions
@@ -1335,8 +1334,6 @@ function UpdateActorsMenu() {
 
 		if (state.actors[i].name != null)
 			field = $(actorFields[i]).find('button.collapsible').text(state.actors[i].name);
-
-		//console.log(state.actors[i].portraitfile.replace(/^.*[\\\/]/, ''));
 
 		if (state.actors[i].portraitfile != null) {
 			field = $('#portrait-filename' + i.toString());
