@@ -396,13 +396,115 @@ joint.shapes.dialogue.Choice = joint.shapes.devs.Model.extend(
 	(
 		{
 			type: 'dialogue.Choice',
+			size: { width: 200, height: 60, },
 			inPorts: ['input'],
-			outPorts: ['output'],
+			outPorts: [],
+			choices: [],
 		},
 		joint.shapes.dialogue.Base.prototype.defaults
 	),
 });
-joint.shapes.dialogue.ChoiceView = joint.shapes.dialogue.BaseView;
+joint.shapes.dialogue.ChoiceView = joint.shapes.dialogue.BaseView.extend(
+{
+	template:
+	[
+		'<div class="node">',
+		'<div class="title">',
+		'<span class="header-img">',
+		'<img src="g/alt_route.png"></img>',
+		'</span>',
+		'<button class="delete">x</button>',
+		'<button class="add">+</button>',
+		'<button class="remove">-</button>',
+		'</div>',
+		'</div>',
+	].join(''),
+
+	initialize: function()
+	{
+		joint.shapes.dialogue.BaseView.prototype.initialize.apply(this, arguments);
+		this.$box.find('.add').on('click', _.bind(this.addPort, this));
+		this.$box.find('.remove').on('click', _.bind(this.removePort, this));
+	},
+
+	removePort: function()
+	{
+		if (this.model.get('outPorts').length > 1)
+		{
+			var outPorts = this.model.get('outPorts').slice(0);
+			outPorts.pop();
+			this.model.set('outPorts', outPorts);
+			var choices = this.model.get('choices').slice(0);
+			choices.pop();
+			this.model.set('choices', choices);
+			this.updateSize();
+		}
+	},
+
+	addPort: function()
+	{
+		var outPorts = this.model.get('outPorts').slice(0);
+		outPorts.push('output' + outPorts.length.toString());
+		this.model.set('outPorts', outPorts);
+		var choices = this.model.get('choices').slice(0);
+		choices.push(null);
+		this.model.set('choices', choices);
+		this.updateSize();
+	},
+
+	updateBox: function()
+	{
+		console.clear();
+		console.log(this.model.get('choices').slice(0));
+
+		joint.shapes.dialogue.BaseView.prototype.updateBox.apply(this, arguments);
+
+		var choices = this.model.get('choices');
+		var valueFields = this.$box.find('textarea.choice');
+
+		for (var i = valueFields.length; i < choices.length; i++)
+		{
+			// Prevent paper from handling pointerdown.
+			var $field = $('<textarea class="choice" type="text" />');
+			$field.attr('placeholder', 'Value ' + (i + 1).toString());
+			$field.attr('index', i);
+			this.$box.append($field);
+			$field.on('mousedown click', function(evt) { evt.stopPropagation(); });
+			
+			// This is an example of reacting on the input change and storing the input data in the cell model.
+			$field.on('change', _.bind(function(evt)
+			{
+				var choices = this.model.get('choices').slice(0);
+				choices[$(evt.target).attr('index')] = $(evt.target).val();
+				this.model.set('choices', choices);
+			}, this));
+		}
+
+		for (var i = choices.length; i < valueFields.length; i++)
+		{
+			$(valueFields[i]).remove();
+		}
+
+		// Update value fields
+		valueFields = this.$box.find('textarea.choice');
+		for (var i = 0; i < valueFields.length; i++)
+		{
+			var field = $(valueFields[i]);
+			if (!field.is(':focus'))
+				field.val(choices[i]);
+		}
+	},
+
+	updateSize: function()
+	{
+		if (this.model.get('outPorts').length == 1)
+			return;
+
+		var textField = this.$box.find('textarea.choice');
+		var height = textField.outerHeight(true);
+		this.model.set('size', { width: 200, height: 60 + Math.max(0, (this.model.get('outPorts').length - 1) * height) });
+	},
+});
 
 joint.shapes.dialogue.Branch = joint.shapes.devs.Model.extend(
 {
@@ -423,7 +525,7 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 	template:
 	[
 		'<div class="node">',
-		'<div class="title">',
+		//'<div class="title">',
 		'<div class="title">',
 		'<span class="header-img">',
 		'<img src="g/alt_route.png"></img>',
@@ -509,9 +611,9 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 			var $field = $('<input class="branchOption" type="text" class="value" />');
 			$field.attr('placeholder', 'Value ' + (i + 1).toString());
 			$field.attr('index', i);
-			this.$box.append($field);
+			 this.$box.append($field);
+			//$('<div></div>')
 			$field.on('mousedown click', function(evt) { evt.stopPropagation(); });
-			console.log('append');
 
 			// This is an example of reacting on the input change and storing the input data in the cell model.
 			$field.on('change', _.bind(function(evt)
@@ -526,8 +628,7 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 		for (var i = values.length; i < valueFields.length; i++)
 		{
 			$(valueFields[i]).remove();
-		}
-			
+		}	
 
 		// Update value fields
 		valueFields = this.$box.find('input.value');
@@ -786,6 +887,13 @@ func.optimized_data = function()
 					node.tags[j] = s;
 				}
 			}
+			else if (node.type === 'Choice') {
+				node.choices = {};
+				for (var j = 0; j < cell.choices.length; j++) {
+					var choice = cell.choices[j];
+					node.choices[choice] = null;
+				}
+			}
 			else
 			{
 				node.name = cell.name;
@@ -819,6 +927,12 @@ func.optimized_data = function()
 					}
 					source.branches[value] = target ? target.id : null;
 				}
+				else if (source.type === 'Choice') {
+					var portNumber = parseInt(cell.source.port.slice('output'.length));
+					var sourceCell = cellsByID[source.id];
+					var value = sourceCell.choices[portNumber];
+					source.choices[value] = target ? target.id : null;
+				}
 				else if ((source.type === 'Text' || source.type === 'Node') && target && target.type === 'Choice')
 				{
 					if (!source.choices)
@@ -835,7 +949,8 @@ func.optimized_data = function()
 	}
 
 	data.nodes = nodes;
-	return data;
+	console.log(data);
+	//return data;
 };
 
 // Menu actions
@@ -1013,13 +1128,23 @@ function queryNodes() {
 				}
 			}
 			else {
-				if (type === 'Choice' || type === 'Text') {
+				if (type === 'Text') {
 					var speech = cell.name.split(" ");
 
 					if (speech != null && speech != "") {
 						for (var k = 0; k < speech.length; k++) {
 							if (speech[k] == term)
 								GetNodeById(cell.id).attr('class', 'node highlight');
+						}
+					}
+				}
+				else if (type === 'Choice') {
+					for (var k = 0; k < cell.choices.length; k++) {
+						var speech = cell.choices[k].split(" ");
+
+						for (var l = 0; l < speech.length; l++) {
+							if (speech[l] == term)
+							GetNodeById(cell.id).attr('class', 'node highlight');
 						}
 					}
 				}
