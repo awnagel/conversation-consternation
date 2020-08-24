@@ -2,6 +2,7 @@ var fs = require('fs');
 const { remote, BrowserWindow } = require('electron');
 const { clear } = require('console');
 const { Menu, MenuItem, dialog } = remote;
+const NewBrowserWindow = remote.BrowserWindow;
 
 // Constants
 
@@ -425,6 +426,13 @@ joint.shapes.dialogue.ChoiceView = joint.shapes.dialogue.BaseView.extend(
 		joint.shapes.dialogue.BaseView.prototype.initialize.apply(this, arguments);
 		this.$box.find('.add').on('click', _.bind(this.addPort, this));
 		this.$box.find('.remove').on('click', _.bind(this.removePort, this));
+
+		// Create some choices, have to do this manually.
+		if (this.model.get('outPorts').length == 0) {
+			this.addPort();
+			this.addPort();
+			this.model.set('size', { width: 200, height: 96 });
+		}
 	},
 
 	removePort: function()
@@ -497,8 +505,8 @@ joint.shapes.dialogue.ChoiceView = joint.shapes.dialogue.BaseView.extend(
 
 	updateSize: function()
 	{
-		if (this.model.get('outPorts').length == 1)
-			return;
+		//if (this.model.get('outPorts').length == 1)
+		//	return;
 
 		var textField = this.$box.find('textarea.choice');
 		var height = textField.outerHeight(true);
@@ -551,6 +559,8 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 			this.model.set('name', $(evt.target).val());
 			$(evt.target).val(this.model.get('name'));
 		}, this));
+
+		this.updateBox();
 	},
 
 	removePort: function()
@@ -631,7 +641,7 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 		}	
 
 		// Update value fields
-		valueFields = this.$box.find('input.value');
+		valueFields = this.$box.find('input.branchOption');
 		for (var i = 0; i < valueFields.length; i++)
 		{
 			var field = $(valueFields[i]);
@@ -933,15 +943,6 @@ func.optimized_data = function()
 					var value = sourceCell.choices[portNumber];
 					source.choices[value] = target ? target.id : null;
 				}
-				else if ((source.type === 'Text' || source.type === 'Node') && target && target.type === 'Choice')
-				{
-					if (!source.choices)
-					{
-						source.choices = [];
-						delete source.next;
-					}
-					source.choices.push(target.id);
-				}
 				else
 					source.next = target ? target.id : null;
 			}
@@ -1070,12 +1071,14 @@ func.exit = function()
 
 	if (!state.filepath) {
 		if (confirm("You're about to exit without saving your file! Do you want to save?")) {
-			func.save()
+			func.save();
 		} else {
-			window.close()
+			window.close();
+			previewWindow.close();
 		}
 	} else {
-		window.close()
+		window.close();
+		previewWindow.close();
 	}
 };
 
@@ -1243,7 +1246,7 @@ function UpdateChoiceDropdowns() {
 }
 
 function AddActor() {
-	state.actors.push({"name": null, "portraitfile" : null, "tags": []});
+	state.actors.push({"name": null, "portraitfile" : null, "tags": [], "color" : "", "isPlayer" : false});
 	UpdateActorsMenu();
 }
 
@@ -1285,6 +1288,9 @@ function UpdateActorsMenu() {
 		var $actorNameField = $('<input type="text" class="value" />');
 		$actorNameField.attr('placeholder', 'Name');
 
+		var $actorColorField = $('<input class="color" type="color" onchange="clickColor(0, -1, -1, 5) value=#ff0000"/>');
+		var $actorIsPlayerField = $('<input class="isPlayer" name="isPlayer" type="radio">Player</actor>');
+
 		var $actorPortraitFileNameField = $('<button id="portrait-file-select" onclick="PortraitFile(' + i + ')">Portrait</button>');
 		$actorPortraitFileNameField.attr('placeholder', 'Portrait');
 
@@ -1296,6 +1302,8 @@ function UpdateActorsMenu() {
 		$actorBox.find('div.actor-content').append($('<br>'));
 		$actorBox.find('div.actor-content').append($actorPortraitFileNameField);
 		$actorBox.find('div.actor-content').append($potraitFileNameTitle);
+		$actorBox.find('div.actor-content').append($actorColorField);
+		$actorBox.find('div.actor-content').append($actorIsPlayerField);
 		$actorBox.find('div.actor-content').append($actorDeleteButton);
 
 		$box.append($actorBox);
@@ -1319,6 +1327,22 @@ function UpdateActorsMenu() {
 			$actorBox.find('button.collapsible').text($(evt.target).val());
 			state.actors = actors;
 		}, this));
+
+		$actorColorField.on('change', _.bind(function(evt)
+		{
+			var actors = state.actors;
+			actors[i - 1].color = $(evt.target).val();
+			state.actors = actors;
+			console.log(state.actors);
+		}, this));
+
+		$actorIsPlayerField.on('click', _.bind(function(evt)
+		{
+			var actors = state.actors;
+			actors[i - 1].isPlayer = $(evt.target).is(":checked");
+			state.actors = actors;
+			UpdateActorsIsPlayerFields();
+		}, this));
 	}
 
 	for (var i = state.actors.length; i < actorFields.length; i++) {
@@ -1329,8 +1353,11 @@ function UpdateActorsMenu() {
 	for (var i = 0; i < actorFields.length; i++) {
 		var field = $(actorFields[i]).find('input.value');
 
-		if (!field.is(':focus'))
+		if (!field.is(':focus')) {
 			field.val(state.actors[i].name);
+			$(actorFields[i]).find('input.color').val(state.actors[i].color);
+			$(actorFields[i]).find('input.isPlayer').prop("checked", state.actors[i].isPlayer);
+		}
 
 		if (state.actors[i].name != null)
 			field = $(actorFields[i]).find('button.collapsible').text(state.actors[i].name);
@@ -1339,6 +1366,17 @@ function UpdateActorsMenu() {
 			field = $('#portrait-filename' + i.toString());
 			field.text(state.actors[i].portraitfile.replace(/^.*[\\\/]/, ''));
 		}
+	}
+}
+
+function UpdateActorsIsPlayerFields() {
+	var $box = $('#actors-box');
+
+	var actorFields = $box.find('div.actorBox');
+	for (var i = 0; i < actorFields.length; i++) {
+		var field = $(actorFields[i]).find('input.isPlayer');
+
+		state.actors[i].isPlayer = field.is(":checked");
 	}
 }
 
@@ -1427,6 +1465,15 @@ function UpdateNodeList() {
 			}
 		}
 	}
+}
+
+let previewWindow;
+
+function InitPreviewWindow() {
+	remote.getGlobal('current_dialogue').data = func.optimized_data();
+	remote.getCurrentWindow().setSize(600, 800, true);
+	remote.getCurrentWindow().center();
+	remote.getCurrentWindow().loadFile("indexPreview.html");
 }
 
 // Initialize

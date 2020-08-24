@@ -370,6 +370,10 @@ span
     background-color: #000;
 }
 
+#search-bar {
+	max-width: 180px;
+}
+
 #search-box {
 	background-color: #666;
 	/* border-style: solid;
@@ -550,4 +554,17 @@ span
 
 #show-global-nodes:hover {
 	background-color: #8c6;
+}
+
+#play-button {
+	width: 0;
+    height: 0;
+    border-top: 25px solid transparent;
+    border-left: 50px solid rgb(185, 75, 75);
+	border-bottom: 25px solid transparent;
+	left: 96%;
+	top: 93%;
+	position: fixed;
+	z-index: 4;
+	background: none;
 }

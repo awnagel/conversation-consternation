@@ -4,6 +4,8 @@ var path = require('path')
 let window;
 let main;
 
+global.current_dialogue = { data: null };
+
 function CreateWindow() {
     window = new BrowserWindow({
         width: 1280,
@@ -12,7 +14,7 @@ function CreateWindow() {
             nodeIntegration: true
         },
         icon: path.join(__dirname, 'g/icon64.png')
-    })
+    });
 
     window.loadFile('index.html');
 
