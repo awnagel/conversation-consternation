@@ -1627,6 +1627,7 @@ function InitPreviewWindow() {
 	state.menu.append(new MenuItem({ label: 'Set', click: func.add_node(joint.shapes.dialogue.Set) }));
 	state.menu.append(new MenuItem({ label: 'Note', click: func.add_node(joint.shapes.dialogue.Note) }));
 	state.menu.append(new MenuItem({ type: 'separator' }));
+	state.menu.append(new MenuItem({ label: 'Play', click: InitPreviewWindow}));
 	state.menu.append(new MenuItem({ label: 'Save', click: func.save }));
 	state.menu.append(new MenuItem({ label: 'Open', click: func.show_open_dialog }));
 	state.menu.append(new MenuItem({ label: 'New', click: func.clear }));
